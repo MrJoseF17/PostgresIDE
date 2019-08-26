@@ -11,7 +11,6 @@
             <div class="card">
                 <form method="post" action="{{ route('post_create_procedure') }}">
                     @csrf
-                
                     <div class="card-header text-center font-weight-bold">
                         <h3>Gestor de Funciones</h3>
                         <small>
@@ -37,18 +36,14 @@
                         </div>
                         <div class="col-md-12">
                             <div class="form-group">
-                                <label>Parametros</label>
-                                <input type="text" placeholder="Ingresar parametros separados por comas" name="procedure_params"
-                                    class="form-control">
-                                @if ($errors->has('procedure_params'))
-                                <p class="alert text-danger">{{ $errors->first('procedure_params') }}</p>
-                                @endif
-                            </div>
-                        </div>
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                <textarea class="form-control" name="procedure_query"
-                                    placeholder="Ingrese la Query de su funcion aquí..."></textarea>
+                                <textarea class="form-control" rows="15" name="procedure_query">
+RETURNS void AS $helloWorld$
+DECLARE
+BEGIN
+RAISE LOG 'Hello, %', name;
+END;
+$helloWorld$ LANGUAGE plpgsql;    
+                                </textarea>
                                 @if ($errors->has('procedure_query'))
                                 <p class="alert text-danger">{{ $errors->first('procedure_query') }}</p>
                                 @endif

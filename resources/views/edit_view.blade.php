@@ -10,7 +10,7 @@
         <div class="col-md-8">
             <div class="card">
                 <form method="post" action="{{ route('post_edit_view') }}">
-                    @csrf                    
+                    @csrf                 
                     <div class="card-header text-center font-weight-bold">
                         <h3>Gestor de Vistas</h3>
                         <small>
@@ -22,7 +22,8 @@
                             <div class="form-group">
                                 <label>Nombre</label>
                                 @foreach ($view as $item)
-                                <input type="text" name="old_view_name" class="form-control" value="{{ $item->table_name }}">
+                                <input type="hidden" name="old_view_name" value="{{ $item->table_name }}">
+                                <input type="text" name="new_view_name" class="form-control" value="{{ $item->table_name }}">
                                 @endforeach
                                 @if ($errors->has('old_view_name'))
                                 <p class="alert text-danger">{{ $errors->first('old_view_name') }}</p>

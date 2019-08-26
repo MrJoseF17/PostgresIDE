@@ -23,7 +23,7 @@
                         <div class="col-md-12">
                             <div class="form-group">
                                 <label>Nombre</label>
-                                <input type="text" placeholder="Ingresar Nuevo Nombre de la secuencia" name="sequence_name"
+                                <input type="text" placeholder="Ingresar Nuevo Nombre de la secuencia" value="{{ $sequence[0]->sequence_name }}" name="sequence_name"
                                     class="form-control">
                                 @if ($errors->has('sequence_name'))
                                 <p class="alert text-danger">{{ $errors->first('sequence_name') }}</p>
@@ -33,8 +33,7 @@
                         <div class="col-md-12">
                             <div class="form-group">
                                 <label>Sentecia SQL</label>
-                                <textarea class="form-control" name="sequence_query" cols="30" rows="10"
-                                    placeholder="Escriba su Query SQl..."></textarea>
+                                <textarea class="form-control" name="sequence_query" cols="30" rows="10">start with {{ $sequence[0]->start_value }} increment by {{ $sequence[0]->increment }} minvalue {{ $sequence[0]->minimum_value }} maxvalue {{ $sequence[0]->maximum_value }} cycle;</textarea>
                                 @if ($errors->has('sequence_query'))
                                 <p class="alert text-danger">{{ $errors->first('sequence_query') }}</p>
                                 @endif

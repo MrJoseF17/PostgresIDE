@@ -25,16 +25,20 @@ class HomeController extends Controller
      * @return \Illuminate\Contracts\Support\Renderable
      */
     public function index(){
+        $dbs = DB::select("SELECT * FROM pg_database;");
         $tables = DB::connection()->getDoctrineSchemaManager()->listTableNames();
         $views = DB::select("SELECT * FROM INFORMATION_SCHEMA.VIEWS WHERE table_schema = 'public'");
         $indexes = DB::select("SELECT * FROM pg_indexes WHERE tablename NOT LIKE 'pg%';");
         $primary = DB::select("SELECT * FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE constraint_type='PRIMARY KEY'");
         $foreign = DB::select("SELECT * FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE constraint_type='FOREIGN KEY'");
-
-        $sequences = DB::select('SELECT * FROM INFORMATION_SCHEMA.SEQUENCES');
         $triggers = DB::select('SELECT * FROM INFORMATION_SCHEMA.triggers');
+        $sequences = DB::select('SELECT * FROM INFORMATION_SCHEMA.SEQUENCES');
+        $procedures = DB::select("SELECT  * FROM pg_catalog.pg_namespace n JOIN pg_catalog.pg_proc p ON p.pronamespace = n.oid WHERE n.nspname = 'public';");
 
         $data = [
+            'quant_dbs' => count($dbs),
+            'dbs' => $dbs,
+
             'quant_tables' => count($tables),
             'tables' => $tables,
             
@@ -53,16 +57,29 @@ class HomeController extends Controller
             
             'quant_sequences' => count($sequences),
             'sequences' => $sequences,
+
+            'quant_procedures' => count($procedures),
+            'procedures' => $procedures
             
         ];
-
-        // dd($primary, $foreign);
 
         return view('home', $data);
     }
 
     public function sql_console(){
         return view('console');
+    }
+
+    public function post_create_database(Request $request){
+        $request->validate([
+            'db_name' => 'required'
+        ]);
+        DB::unprepared("CREATE DATABASE " . $request->input('db_name'));
+        return redirect(route('home'));
+    }
+    public function post_delete_database(Request $request){
+        DB::unprepared("DROP DATABASE " . $request->input('db_name'));
+        return redirect(route('home'));
     }
 
     public function post_sql_console(Request $request){
@@ -190,8 +207,8 @@ class HomeController extends Controller
             'old_view_name' => 'required',
             'new_view_query' => 'required'
         ]);
-        DB::unprepared('DROP VIEW IF EXISTS ' . $request->input('old_view_name') . ';');
-        DB::unprepared('CREATE VIEW ' . $request->input('old_view_name') . ' AS '. $request->input('new_view_query') .';');
+        DB::unprepared('DROP VIEW ' . $request->input('old_view_name') . ';');
+        DB::unprepared('CREATE VIEW ' . $request->input('new_view_name') . ' AS '. $request->input('new_view_query') .';');
         return redirect(route('home'));
     }
     public function post_delete_view(Request $request){
@@ -269,8 +286,13 @@ class HomeController extends Controller
 
         return view('create_constraint', ['table' => $tables]);
     }
-    public function edit_constraint(){
-        return view('edit_constraint');
+    public function edit_constraint($name){
+        $constraint = DB::select("SELECT * FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE constraint_name='" . $name . "';");
+        $tables = DB::connection()->getDoctrineSchemaManager()->listTableNames();
+        return view('edit_constraint', [
+            'constraint' => $constraint,
+            'table' => $tables
+        ]);
     }
     public function post_primary_key(Request $request){
         $request->validate([
@@ -311,6 +333,58 @@ class HomeController extends Controller
             session()->flash('query_error', 'Error no se pudo Procesar su Query.');
             return redirect()->route('create_constraint');
         }
+    }
+    public function post_edit_primary(Request $request){
+        $request->validate([
+            'primary_name'=>'required',
+        ]);
+
+        DB::unprepared("ALTER TABLE " . $request->input('primary_table') . " DROP CONSTRAINT " . $request->input('primary_name') . ";");
+        DB::unprepared("ALTER TABLE " . $request->input('primary_table') . " ADD PRIMARY KEY (" . $request->input('primary_key') .  ");");
+        return redirect(route('home'));
+    }
+    public function post_edit_foreign(Request $request){
+        $request->validate([
+            'foreign_name' => 'required',
+            'foreign_table' => 'required',
+            'foreign_key' => 'required',
+            'ref_table' => 'required',
+            'ref_field' => 'required',
+        ]);
+
+        DB::unprepared("ALTER TABLE " . $request->input('foreign_table') . " DROP CONSTRAINT " . $request->input('foreign_name') . ";");
+        DB::unprepared("ALTER TABLE " . $request->input('foreign_table') . " ADD FOREIGN KEY (" . $request->input('foreign_key') .  ") REFERENCES " . $request->input('ref_table') .  "(" . $request->input('ref_field') . ");");
+
+        return redirect(route('home'));
+    }
+    public function post_delete_primary_key(Request $request){
+        $request->validate([
+            'primary_table' => 'required',
+            'primary_name' => 'required'
+        ]);
+
+        try {
+            DB::unprepared("ALTER TABLE " . $request->input('primary_table') . " DROP CONSTRAINT " . $request->input('primary_name') . ';');
+            
+        } catch (\Throwable $th) {
+            return $th;
+        }
+
+        return redirect(route('home'));
+    }
+    public function post_delete_foreign_key(Request $request){
+        $request->validate([
+            'foreign_table' => 'required',
+            'foreign_name' => 'required'
+        ]);
+
+        try {
+            DB::unprepared("ALTER TABLE " . $request->input('foreign_table') . " DROP CONSTRAINT " . $request->input('foreign_name') . ';');
+        } catch (\Throwable $th) {
+            return $th;
+        }
+
+        return redirect(route('home'));
     }
 
 
@@ -404,8 +478,11 @@ class HomeController extends Controller
     public function create_procedure(){
         return view('create_procedure');
     }
-    public function edit_procedure(){
-        return view('edit_procedure');
+    public function edit_procedure($name){
+        $procedure = DB::select("SELECT  * FROM pg_catalog.pg_namespace n JOIN pg_catalog.pg_proc p ON p.pronamespace = n.oid WHERE n.nspname = 'public' AND proname='". $name ."';");
+        return view('edit_procedure', [
+            'procedure' => $procedure
+        ]);
     }
     public function post_create_procedure(Request $request){
         $request->validate([
@@ -413,7 +490,7 @@ class HomeController extends Controller
             'procedure_query' => 'required',
         ]);
 
-        $sql = "CREATE OR REPLACE FUNCTION " . $request->input('procedure_name') . "(" . $request->input('procedure_params') . ") DECLARE BEGIN" . $request->input('procedure_query') . " END;";
+        $sql = "CREATE OR REPLACE FUNCTION " . $request->input('procedure_name') . "()" . $request->input('procedure_query');
 
         try {
             DB::unprepared($sql);
@@ -423,38 +500,21 @@ class HomeController extends Controller
             session()->flash('query_error', 'Error no se pudo Procesar su Query.');
             return redirect()->route('create_procedure');
         }
-
-        // DB::unprepared("CREATE OR REPLACE FUNCTION " . sum(IN x int,IN y int, OUT sum int, OUT prod int) AS $$
-        //          BEGIN
-        //             IF x < 2 THEN
-        //             RAISE EXCEPTION 'information message %', now();
-        //             END IF;
-        //                 sum := x + y;
-        //                 prod := x * y;
-        //             END;");
     }
+    public function post_edit_procedure(Request $request){
+        $sql = "CREATE OR REPLACE FUNCTION " . $request->input('procedure_name') . "()" . $request->input('procedure_query');
 
-
-
-
-
-    public function test(){
-        // DB::unprepared("CREATE VIEW otro_test AS SELECT id, name FROM users");
-        // DB::unprepared("CREATE INDEX test_indice ON users (id)");
-        // DB::unprepared("ALTER TABLE tests ADD PRIMARY KEY (id);");
-        //PENDIENTE DB::unprepared("CREATE TRIGGER test");
-        // DB::unprepared("CREATE SEQUENCE test ");
-        //PENDIENTE DB::unprepared("CREATE OR REPLACE FUNCTION sum(IN x int,IN y int, OUT sum int, OUT prod int) AS $$
-        //         BEGIN
-        //             IF x < 2 THEN
-        //             RAISE EXCEPTION 'information message %', now();
-        //             END IF;
-        //                 sum := x + y;
-        //                 prod := x * y;
-        //             END;");
-
-        $keys = DB::unprepared("SHOW KEYS FROM PostgresIDE WHERE Key_name = 'PRIMARY'");
-        return $keys;
-        return '<script>console.log("hola")</script>';
+        try {
+            DB::unprepared("DROP FUNCTION " . $request->input('old_procedure_name') . "();");
+            DB::unprepared($sql);
+            return redirect(route('home'));
+        } catch (\Illuminate\Database\QueryException $ex) {
+            session()->flash('query_error', 'Error no se pudo Procesar su Query.');
+            return redirect()->route('create_procedure');
+        }        
+    }
+    public function post_delete_procedure(Request $request){
+        DB::unprepared('DROP FUNCTION ' . $request->input('procedure_name') . '();');
+        return redirect(route('home'));
     }
 }

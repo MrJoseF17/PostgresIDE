@@ -19,6 +19,8 @@ Route::get('/home', 'HomeController@index')->name('home');
 Route::get('/console', 'HomeController@sql_console')->name('sql_console');
 Route::post('/console', 'HomeController@post_sql_console')->name('post_sql_console');
 
+Route::post('/create/database', 'HomeController@post_create_database')->name('post_create_database');
+Route::post('/delete/database', 'HomeController@post_delete_database')->name('post_delete_database');
 
 Route::get('/create/table', 'HomeController@create_table')->name('create_table');
 Route::get('/edit/table/{name}', 'HomeController@edit_table')->name('edit_table');
@@ -40,17 +42,20 @@ Route::post('/create/index/', 'HomeController@post_create_index')->name('post_cr
 Route::post('/edit/index', 'HomeController@post_edit_index')->name('post_edit_index');
 Route::post('/delete/index', 'HomeController@post_delete_index')->name('post_delete_index');
 
+
 Route::get('/create/contraint', 'HomeController@create_constraint')->name('create_constraint');
-Route::get('/edit/contraint/{name}', 'HomeController@edit_contraint')->name('edit_contraint');
+Route::get('/edit/contraint/{name}', 'HomeController@edit_constraint')->name('edit_constraint');
 Route::post('/create/primary', 'HomeController@post_primary_key')->name('post_primary_key');
-Route::post('/delete/primary', 'HomeController@post_delete_foreign_key')->name('post_delete_foreign_key');
 Route::post('/create/foreign', 'HomeController@post_foreign_key')->name('post_foreign_key');
+Route::post('/edit/primary', 'HomeController@post_edit_primary')->name('post_edit_primary');
+Route::post('/edit/foreign', 'HomeController@post_edit_foreign')->name('post_edit_foreign');
+Route::post('/delete/primary', 'HomeController@post_delete_primary_key')->name('post_delete_primary_key');
+Route::post('/delete/foreign', 'HomeController@post_delete_foreign_key')->name('post_delete_foreign_key');
 
 
 Route::get('/create/trigger', 'HomeController@create_trigger')->name('create_trigger');
 Route::get('/edit/trigger/{name}', 'HomeController@edit_trigger')->name('edit_trigger');
 Route::post('/create/trigger', 'HomeController@post_create_trigger')->name('post_create_trigger');
-
 
 
 Route::get('/create/sequence', 'HomeController@create_sequence')->name('create_sequence');
@@ -63,6 +68,5 @@ Route::post('/delete/sequence', 'HomeController@post_delete_sequence')->name('po
 Route::get('/create/procedure', 'HomeController@create_procedure')->name('create_procedure');
 Route::get('/edit/procedure/{name}', 'HomeController@edit_procedure')->name('edit_procedure');
 Route::post('/create/procedure', 'HomeController@post_create_procedure')->name('post_create_procedure');
-
-
-Route::get('/test', 'HomeController@test');
+Route::post('/edit/procedure', 'HomeController@post_edit_procedure')->name('post_edit_procedure');
+Route::post('/delete/procedure', 'HomeController@post_delete_procedure')->name('post_delete_procedure');

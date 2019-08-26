@@ -38,9 +38,12 @@ $(document).ready(function() {
     $(".text-danger").fadeTo(2500, 500).slideUp(500, function() {
         $("#success-alert").slideUp(500);
     });
-
-
     //DASHBOARD MENU
+    $('#btn_show_dbs').on('click', function() {
+        $('.hide_information').hide();
+        $('#dbs_information').fadeIn();
+    });
+
     $('#btn_show_tables').on('click', function() {
         $('.hide_information').hide();
         $('#tables_information').fadeIn();

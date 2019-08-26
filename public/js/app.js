@@ -49224,6 +49224,10 @@ $(document).ready(function () {
     $("#success-alert").slideUp(500);
   }); //DASHBOARD MENU
 
+  $('#btn_show_dbs').on('click', function () {
+    $('.hide_information').hide();
+    $('#dbs_information').fadeIn();
+  });
   $('#btn_show_tables').on('click', function () {
     $('.hide_information').hide();
     $('#tables_information').fadeIn();
@@ -49458,8 +49462,8 @@ __webpack_require__.r(__webpack_exports__);
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! C:\Users\JoseParedes\Desktop\PostgresIDE\resources\js\app.js */"./resources/js/app.js");
-module.exports = __webpack_require__(/*! C:\Users\JoseParedes\Desktop\PostgresIDE\resources\sass\app.scss */"./resources/sass/app.scss");
+__webpack_require__(/*! C:\Users\JoseParedes\Desktop\Jose Paredes\Proyectos\PostgresIDE\resources\js\app.js */"./resources/js/app.js");
+module.exports = __webpack_require__(/*! C:\Users\JoseParedes\Desktop\Jose Paredes\Proyectos\PostgresIDE\resources\sass\app.scss */"./resources/sass/app.scss");
 
 
 /***/ })
