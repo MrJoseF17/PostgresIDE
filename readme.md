@@ -1,3 +1,17 @@
+
+<h3>Instrucciones de Instalcion</h3>
+<ol>
+    <li>Clonar Repositorio</li>
+    <li>Renombrar Archivo .env.example</li>
+    <li>Ejecutar "php artisan key:generate" dentro del proyecto en consola</li>
+    <li>Ejecutar "npm install" dentro del proyecto en consola</li>
+    <li>Ejecutar "composer install" dentro del proyecto en consola</li>
+    <li>Crear base de datos postegres e ingresar el nombre en el campo "DB_DATABASE", ademas setear "DB_USERNAME" en "root" y "DB_PASSWORD" vacio</li>
+    <li>Ejecutar "php artisan migrate" dentro del proyecto en consola</li>
+</ol>
+
+<hr>
+
 <p align="center"><img src="https://laravel.com/assets/img/components/logo-laravel.svg"></p>
 
 <p align="center">
